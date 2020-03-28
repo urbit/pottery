@@ -1,9 +1,9 @@
 import _ from 'lodash';
 
 
-export class InitialReducer {
+export class ConfigReducer {
     reduce(json, state) {
-        let data = _.get(json, 'initial', false);
+        let data = _.get(json, 'pottery', false);
         if (data) {
             state.inbox = data.inbox;
         }

@@ -27,6 +27,7 @@
     "sucrase": "^3.8.0"
   },
   "dependencies": {
+    "@gitgraph/react": "^1.5.3",
     "classnames": "^2.2.6",
     "fs-extra": "^8.1.0",
     "lodash": "^4.17.11",

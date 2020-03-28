@@ -6,7 +6,7 @@ export class IconHome extends Component {
     return (
       <img
         className={"invert-d " + classes}
-        src="/~%APPNAME%/img/Home.png"
+        src="/~pottery/img/Home.png"
         width={16}
         height={16}
       />
