@@ -14,6 +14,8 @@ export class Root extends Component {
     store.setStateHandler(this.setState.bind(this));
 
     this.clickety = this.clickety.bind(this);
+    this.clickCommit = this.clickCommit.bind(this);
+    this.submit = this.submit.bind(this);
     this.graph = this.graph.bind(this);
     this.template = templateExtend(TemplateName.Metro, {
       branch: {
@@ -25,6 +27,7 @@ export class Root extends Component {
           size: 10,
         },
         message: {
+          displayHash: false,
           displayAuthor: false,
           font: "normal 16pt monospace",
         }
@@ -33,8 +36,7 @@ export class Root extends Component {
   }
 
   clickety() {
-    console.log(this.state.gitgraph);
-    console.log("commits",this.state.commits);
+    console.log("commits", this.state.commits);
     let { commits, gitgraph } = this.state;
     if ( !commits.commits ) return;
 
@@ -52,11 +54,12 @@ export class Root extends Component {
       }
       return {
         refs: ref,
-        hash: com.commitHash.slice(-5),
-        hashAbbrev: com.commitHash.slice(-5),
-        parents: com.parents.map(par => {return par.slice(-5);}),
-        parentsAbbrev: com.parents.map(par => {return par.slice(-5);}),
-        subject: "content: " +
+        hash: com.commitHash.slice(2),  // lop off 0v for more unique hash
+        parents: com.parents.map(par => {return par.slice(2);}),
+        onMessageClick: this.clickCommit,
+        subject: "commit: " +
+                  com.commitHash.slice(-5) +
+                  ", content: " +
                   com.contentHash.slice(-5) +
                   ", parents: " +
                   com.parents.map(par => {return par.slice(-5);}),
@@ -68,14 +71,38 @@ export class Root extends Component {
     gitgraph.import(data);
   }
 
+  clickCommit(commit, args) {
+    console.log("click", commit);
+    let val = commit.refs.slice(-1)[0];
+    if (!val) {
+      return
+    } else if (this.bobDesk.value == "") {
+      this.bobDesk.value = val;
+    } else {
+      this.aliDesk.value = val;
+    }
+  }
+
+  submit() {
+    api.pottery( {
+      ali: this.aliDesk.value,
+      bob: this.bobDesk.value,
+      germ: this.germ.value,
+    });
+  }
+
   graph(gitgraph) {
     this.setState({gitgraph: gitgraph});
-    this.clickety();
   }
 
 
   render() {
 
+    let textAreaClasses =
+      "f7 mono ba bg-gray0-d white-d pa3 mb2 db " +
+      "focus-b--black focus-b--white-d b--gray3 b--gray2-d nowrap "
+
+    this.clickety();
     return (
       <BrowserRouter>
         <div className="absolute w-100 bg-gray0-d ph4-m ph4-l ph4-xl pb4-m pb4-l pb4-xl">
@@ -84,13 +111,37 @@ export class Root extends Component {
           return (
             <div className="cf w-100 flex flex-column pa4 ba-m ba-l ba-xl b--gray2 br1 h-100 h-100-minus-40-m h-100-minus-40-l h-100-minus-40-xl f9 white-d">
               <h1 className="mt0 f8 fw4">pottery</h1>
-              <p className="lh-copy measure pt3">Once this page has finished loading, press "Visualize!"</p>
+              <textarea
+                ref={ e => { this.bobDesk = e; } }
+                className={textAreaClasses}
+                placeholder="target desk"
+                spellCheck="false"
+                rows={1}
+              />
+              <textarea
+                ref={ e => { this.aliDesk = e; } }
+                className={textAreaClasses}
+                placeholder="source desk"
+                spellCheck="false"
+                rows={1}
+              />
+              <select
+                ref={ e => { this.germ = e; } }
+                className={textAreaClasses}>
+                <option value="mate">%mate: conflict if changed same lines</option>
+                <option value="meet">%meet: conflict if changed same files</option>
+                <option value="meld">%meld: annotate conflicts</option>
+                <option value="fine">%fine: fast-forward (requires ancestor)</option>
+                <option value="this">%this: use target desk's data</option>
+                <option value="that">%that: use source desk's data</option>
+                <option value="init">%init: start new desk (danger!)</option>
+              </select>
               <button
-                className="lh-copy measure pt3"
-                onClick={this.clickety}>
-                Visualize!
+                className={textAreaClasses}
+                onClick={this.submit}>
+                Merge!
               </button>
-            <Gitgraph options={{template: this.template}}>{this.graph}</Gitgraph>
+              <Gitgraph options={{template: this.template}}>{this.graph}</Gitgraph>
             </div>
           )}}
         />

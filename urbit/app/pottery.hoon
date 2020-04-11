@@ -33,22 +33,41 @@
 ::
 |%
 +$  card  card:agent:gall
++$  states  @
 --
 ^-  agent:gall
+=/  state  %1
 =<
   |_  bol=bowl:gall
   +*  this       .
       pottery-core  +>
       cc         ~(. pottery-core bol)
       def        ~(. (default-agent this %|) bol)
+      warp
+    %+  turn  ~(tap in .^((set desk) %cd start-path))
+    |=  =desk
+    [%pass /warp/[desk]/w %arvo %c %warp our.bol desk ~ %next %w da+now.bol /]
   ::
   ++  on-init
     ^-  (quip card _this)
     =/  launcha  [%launch-action !>([%pottery / '/~pottery/js/tile.js'])]
     :_  this
-    :~  [%pass / %arvo %e %connect [~ /'~pottery'] %pottery]
+      ^-  (list card:agent:gall)
+    :*  [%pass / %arvo %e %connect [~ /'~pottery'] %pottery]
         [%pass /pottery %agent [our.bol %launch] %poke launcha]
+        warp
     ==
+  ::
+  ++  on-save  !>(state)
+  ++  on-load
+    |=  old=vase
+    =+  !<(=states old)
+    ?:  (lth states 2)
+      ~&  >  %on-load
+      [warp this]
+    ~&  >  %on-lodi
+    `this
+  ::
   ++  on-poke
     |=  [=mark =vase]
     ^-  (quip card _this)
@@ -64,9 +83,24 @@
         %json
       ~&  >  %poked
       =+  !<(=json vase)
-      ~&  >  json=json
-      `this
-
+      =/  [=bob=desk =ali=desk =germ]
+        %.  json
+        =,  dejs:format
+        (ot bob+(se %tas) ali+(se %tas) germ+(cu germ (se %tas)) ~)
+      ~&  >  merge=[bob-desk ali-desk germ]
+      :_  this
+      =/  tid
+        ;:  (cury cat 3)
+          'pottery--'  bob-desk
+          '--'  ali-desk
+          '--'  germ
+          '--'  (scot %uv eny.bol)
+        ==
+      =+  arg=[~ `tid %merge !>([bob-desk our.bol ali-desk germ ~])]
+      ^-  (list card:agent:gall)
+      :~  [%pass /merge %agent [our.bol %spider] %watch /thread-result/[tid]]
+          [%pass /merge %agent [our.bol %spider] %poke %spider-start !>(arg)]
+      ==
     ==
   ::
   ++  on-watch
@@ -80,17 +114,53 @@
       (on-watch:def path)
     [[%give %fact ~ %json !>(*json)]~ this]
   ::
-  ++  on-agent  on-agent:def
+  ++  on-agent
+    |=  [=wire =sign:agent:gall]
+    ?-    -.sign
+        %poke-ack
+      ?~  p.sign
+        `this
+      %-  (slog leaf+"pottery couldn't start thread" u.p.sign)
+      `this
+    ::
+        %watch-ack
+      ?~  p.sign
+        `this
+      %-  (slog leaf+"pottery couldn't start listen to thread" u.p.sign)
+      `this
+    ::
+        %kick  `this
+        %fact
+      =*  path  t.wire
+      ?+    p.cage.sign  (on-agent:def wire sign)
+          %thread-fail
+        =+  !<([=term =tang] q.cage.sign)
+        %-  (slog leaf+"pottery failed" leaf+<term> tang)
+        `this
+      ::
+          %thread-done
+        %-  (slog leaf+"pottery succeeded" ~)
+        `this
+      ==
+    ==
   ::
   ++  on-arvo
     |=  [=wire =sign-arvo]
     ^-  (quip card _this)
-    ?.  ?=(%bound +<.sign-arvo)
+    ?:  ?=(%bound +<.sign-arvo)
+      `this
+    ?.  ?=(%writ +<.sign-arvo)
       (on-arvo:def wire sign-arvo)
-    [~ this]
+    ?~  p.+>.sign-arvo
+      %-  (slog leaf+"pottery got null writ" ~)
+      `this
+    ~&  >  %writ
+    :_  this
+    ^-  (list card:agent:gall)
+    :*  [%give %fact ~[/primary] %json !>(get-data:cc)]
+        warp
+    ==
   ::
-  ++  on-save  on-save:def
-  ++  on-load  on-load:def
   ++  on-leave  on-leave:def
   ++  on-peek   on-peek:def
   ++  on-fail   on-fail:def
@@ -141,7 +211,6 @@
   =/  commits=(list commit)  (yakis-to-commits ~(tap in yakis))
   =,  enjs:format
   %:  pairs
-
     head+(pairs (turn heads |=([=tako =desk] (scot %uv tako)^s+desk)))
     commits+(commits-to-json commits)
     ~
@@ -188,8 +257,8 @@
   =,  enjs:format
   %:  pairs
     'commitHash'^(tako-to-json tako.commit)
-    parents+a+(flop (turn parents.commit tako-to-json))
-    children+a+(flop (turn children.commit tako-to-json))
+    parents+a+(turn parents.commit tako-to-json)
+    children+a+(turn children.commit tako-to-json)
     'contentHash'^(tako-to-json content-hash.commit)
     ~
   ==

@@ -19169,7 +19169,7 @@
             }.call(commonjsGlobal));
             });
 
-            const _jsxFileName = "/Users/philip/create-landscape-app/tile/tile.js";
+            const _jsxFileName = "/Users/philip/pottery/tile/tile.js";
 
             class potteryTile extends react_1 {
 
