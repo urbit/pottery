@@ -1,35 +1,15 @@
 /+  *server, default-agent
-/=  index
-  /^  octs
-  /;  as-octs:mimes:html
-  /:  /===/app/pottery/index
-  /|  /html/
-      /~  ~
-  ==
-/=  tile-js
-  /^  octs
-  /;  as-octs:mimes:html
-  /:  /===/app/pottery/js/tile
-  /|  /js/
-      /~  ~
-  ==
-/=  script
-  /^  octs
-  /;  as-octs:mimes:html
-  /:  /===/app/pottery/js/index
-  /|  /js/
-      /~  ~
-  ==
-/=  style
-  /^  octs
-  /;  as-octs:mimes:html
-  /:  /===/app/pottery/css/index
-  /|  /css/
-      /~  ~
-  ==
-/=  pottery-png
-  /^  (map knot @)
-  /:  /===/app/pottery/img  /_  /png/
+
+/*  index-html  %html  /app/pottery/index/html
+/*  tile-js     %js    /app/pottery/js/tile/js
+/*  script-js   %js    /app/pottery/js/index/js
+/*  style-css   %css   /app/pottery/css/index/css
+/*  tile-png    %png   /app/pottery/img/tile/png
+=/  as-octs  as-octs:mimes:html
+=/  index    (as-octs index-html)
+=/  tile-js  (as-octs tile-js)
+=/  script   (as-octs script-js)
+=/  style    (as-octs style-css)
 ::
 |%
 +$  card  card:agent:gall
@@ -178,13 +158,8 @@
       [%'~pottery' %css %index ~]  (css-response:gen style)
       [%'~pottery' %js %tile ~]    (js-response:gen tile-js)
       [%'~pottery' %js %index ~]   (js-response:gen script)
-  ::
-      [%'~pottery' %img @t *]
-    =/  name=@t  i.t.t.site.url
-    =/  img  (~(get by pottery-png) name)
-    ?~  img
-      not-found:gen
-    (png-response:gen (as-octs:mimes:html u.img))
+      [%'~pottery' %img %tile *]
+    (png-response:gen (as-octs:mimes:html tile-png))
   ::
       [%'~pottery' *]  (html-response:gen index)
   ==
